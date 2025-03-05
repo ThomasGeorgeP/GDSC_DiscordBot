@@ -39,7 +39,7 @@ class myClient(commands.Bot):
                             $ai <prompt> - generates prompt
                             $summarize - (reply to the message you want to summarize with $summarize
                             Slash Commands:
-                                /create_poll <options seperated by commas> <title(optional)>
+                                /create_poll <options seperated by commas> <title(optional)> <show(bool) for anonymous voting>
                                 /rickroll -self explanatory
                                 /create_reminder <dd-mm-yyyy hour:minutes in 24 hour format>)''')
         elif message.content.startswith("$ai"):
@@ -102,7 +102,7 @@ class myClient(commands.Bot):
         #         await interaction.response.send_message(char[0]*i)
 
         @self.tree.command(name="create_poll",description="Create a poll! Seperate the different options by using commas!. maximum ten options",guild=self.server_id)
-        async def poll(interaction:discord.Interaction,options:str,title:str="Poll"):
+        async def poll(interaction:discord.Interaction,options:str,title:str="Poll",show:bool=True):
             options=options.split(",")[:10]
             global option_choices
             option_choices={i:0 for i in options}
@@ -114,7 +114,7 @@ class myClient(commands.Bot):
             for i in range(len(options)):
                 poll_text+=emoji[i]+" : "+options[i]+" : "+str(option_choices[options[i]])+"\n"
             poll_embed.add_field(name="Options: ",value=poll_text)
-            await interaction.response.send_message(embed=poll_embed,view=PollView(options))
+            await interaction.response.send_message(embed=poll_embed,view=PollView(options,show))
             self.poll_message=True
 
         @self.tree.command(name="rickroll",description="The age old prank!",guild=self.server_id)

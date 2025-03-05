@@ -2,52 +2,56 @@ import discord
 from discord.ext import commands
 
 class PollView(discord.ui.View):
-    def __init__(self, options: list, title: str = "Poll"):
+    def __init__(self, options: list, title: str = "Poll",show:bool=True):
         super().__init__(timeout=None)
         self.title = title
         self.options = options
-        self.votes = {option: 0 for option in options}  # Track votes
-        self.voters = {}  # Track who voted for what
-        self.message = None  # Store poll message reference
+        self.votes = {option: 0 for option in options}
+        self.voters = {} 
+        self.message = None 
         self.emojis = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"]
+        self.display=show
 
-        # Dynamically create buttons
+        
         for index, option in enumerate(options):
             button = discord.ui.Button(
                 label=f"{self.emojis[index]} {option}",
                 style=discord.ButtonStyle.gray,
                 custom_id=str(index)
             )
-            button.callback = self.create_callback(option)  # Assign callback dynamically
+            button.callback = self.create_callback(option) 
             self.add_item(button)
 
     def create_callback(self, option):
         async def button_callback(interaction: discord.Interaction):
             """Handles button click, deletes old message, and creates a new one."""
-            await interaction.response.defer()  # Acknowledge interaction
+            await interaction.response.defer() 
 
             user_id = interaction.user.id
             previous_vote = self.voters.get(user_id)
 
-            # Remove old vote if exists
-            if previous_vote:
+            
+            if previous_vote and self.display:
                 self.votes[previous_vote] -= 1
-
-            # Register new vote
+                if self.display:
+                    await self.message.channel.send(content=f"<@{interaction.user.id}> removed their vote for {previous_vote}")
+            
+            
             self.votes[option] += 1
-            self.voters[user_id] = option  # Update voter's choice
+            self.voters[user_id] = option 
 
-            # Delete old message if it exists
+            
             if self.message:
                 try:
                     await self.message.delete()
                 except discord.NotFound:
-                    pass  # Ignore if message was already deleted
+                    pass  
 
-            # Send a new poll message with updated votes
+           
             new_message = await interaction.channel.send(embed=self.get_poll_embed(), view=self)
-            self.message = new_message  # Update reference to the new message
-
+            self.message = new_message 
+            if self.display:
+                await self.message.channel.send(content=f"<@{interaction.user.id}> voted for {option}")
         return button_callback
 
     def get_poll_embed(self):
