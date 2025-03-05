@@ -34,7 +34,14 @@ class myClient(commands.Bot):
             
         if message.content.startswith("$status"):
             await message.channel.send(f"Bot is Up and running!")
-
+        elif message.content.startswith("$help"):
+            await message.channel.send(f'''
+                            $ai <prompt> - generates prompt
+                            $summarize - (reply to the message you want to summarize with $summarize
+                            Slash Commands:
+                                /create_poll <options seperated by commas> <title(optional)>
+                                /rickroll -self explanatory
+                                /create_reminder <dd-mm-yyyy hour:minutes in 24 hour format>)''')
         elif message.content.startswith("$ai"):
             text= self.gemini.gen(message.content[3:])
             if len(text)>1999:
@@ -94,9 +101,9 @@ class myClient(commands.Bot):
         #     for i in range(1,num+1):
         #         await interaction.response.send_message(char[0]*i)
 
-        @self.tree.command(name="create_poll",description="Create a poll! Seperate the different options by using commas!.",guild=self.server_id)
+        @self.tree.command(name="create_poll",description="Create a poll! Seperate the different options by using commas!. maximum ten options",guild=self.server_id)
         async def poll(interaction:discord.Interaction,options:str,title:str="Poll"):
-            options=options.split(",")
+            options=options.split(",")[:10]
             global option_choices
             option_choices={i:0 for i in options}
             
