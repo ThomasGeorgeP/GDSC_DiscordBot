@@ -17,6 +17,8 @@ class myClient(commands.Bot):
         self.poll_message=False
         self.poll_id=None
         self.timekeeper=timekeeper(self)
+
+
     async def on_ready(self):
     
         print(f'Logged on as {self.user}! ')
@@ -24,7 +26,8 @@ class myClient(commands.Bot):
             await self.tree.sync(guild=self.server_id)
         except:
             print("error")
-            
+        if self.timekeeper.reminders:
+            await self.timekeeper.remind()
     async def on_message(self,message:discord.Message):
         
 
@@ -132,13 +135,13 @@ class myClient(commands.Bot):
                 return
             '''
             {
-    "user":86497869287942378,
-    "descripton":"Reminder",
-    "due_time":"dd-mm-yyyy hh:mm",
-    "time_till_reminder":2386748724.328467,
-    "message_id":932874928379,
-    "channel_id":3908247002323072374347
-}'''    
+        "user":86497869287942378,
+        "descripton":"Reminder",
+        "due_time":"dd-mm-yyyy hh:mm",
+        "time_till_reminder":2386748724.328467,
+        "message_id":932874928379,
+        "channel_id":3908247002323072374347
+            }'''    
             
             rem_embed=discord.Embed(title="Reminder",description=f"Reminder created for {datetime}")
             await interaction.response.send_message(embed=rem_embed)
@@ -157,3 +160,4 @@ class myClient(commands.Bot):
             del self.timekeeper
             self.timekeeper=timekeeper(self)
             await self.timekeeper.remind()
+        

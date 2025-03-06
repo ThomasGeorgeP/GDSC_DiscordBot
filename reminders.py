@@ -6,6 +6,7 @@ import asyncio
 
 
 REMINDER_FILE="reminders.json"
+DELETE_TIME_AFTER_REMINDER=600
 
 def convert_to_timestamp(date_str):
     """
@@ -30,6 +31,7 @@ def seconds_from_now(inp:str):
     return params
 
 class timekeeper():
+
     def __init__(self,bot):
         try:
             with open(REMINDER_FILE) as f:
@@ -42,13 +44,13 @@ class timekeeper():
             if time.time()>self.reminders[i]["time_till_reminder"]:
                 del self.reminders[i]
         with open(REMINDER_FILE,'w') as f:
-            json.dump(self.reminders,f)
+            json.dump(self.reminders,f,indent=3)
         self.reminders=sorted(self.reminders,key=lambda x:x["time_till_reminder"])
         self.bot=bot
-        
 
     async def remind(self):
-
+        if self.reminders==[]:
+            return
         await asyncio.sleep(self.reminders[0]["time_till_reminder"]-time.time())
         await self.bot.remind(self.reminders[0])
         del self.reminders[0]
@@ -56,3 +58,6 @@ class timekeeper():
             json.dump(self.reminders,f)
         if self.reminders!=[]:
             await self.remind()
+
+    async def delete(self):
+        await asyncio.sleep(DELETE_TIME_AFTER_REMINDER)
