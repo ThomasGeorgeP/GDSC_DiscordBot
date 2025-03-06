@@ -28,9 +28,9 @@ class myClient(commands.Bot):
             print("error")
         if self.timekeeper.reminders:
             await self.timekeeper.remind()
+        
     async def on_message(self,message:discord.Message):
         
-
         if message.author==self.user and self.poll_message:
             self.poll_id=discord.Object(message.id)
             self.poll_message=False
@@ -93,16 +93,13 @@ class myClient(commands.Bot):
         #message=await channel.fetch_message(parameters["message_id"])
         await channel.send(content=f"<@{parameters["user"]}>!",embed=reminder_embed)
 
+    async def catch_own_messages(self,message:discord.Message):
+        pass
     def slash_commands(self):
         
         @self.tree.command(name="helloo",description="Bot Says Hi! ",guild=self.server_id)
         async def helloo(interaction: discord.Interaction):
             await interaction.response.send_message("Hi there! ")
-
-        # @self.tree.command(name="pattern",description="Generates a pattern with the entered character! ",guild=self.server_id)
-        # async def patgen(interaction:discord.Interaction,char:str,num:int):
-        #     for i in range(1,num+1):
-        #         await interaction.response.send_message(char[0]*i)
 
         @self.tree.command(name="create_poll",description="Create a poll! Seperate the different options by using commas!. maximum ten options",guild=self.server_id)
         async def poll(interaction:discord.Interaction,options:str,title:str="Poll",show:bool=True):
@@ -144,6 +141,10 @@ class myClient(commands.Bot):
             }'''    
             
             rem_embed=discord.Embed(title="Reminder",description=f"Reminder created for {datetime}")
+            rem_embed.add_field(name="User",value=f"<@{interaction.user.id}>")
+
+            if description!='':
+                rem_embed.add_field(name="Description",value=description)
             await interaction.response.send_message(embed=rem_embed)
 
 

@@ -55,7 +55,7 @@ class timekeeper():
         await self.bot.remind(self.reminders[0])
         del self.reminders[0]
         with open(REMINDER_FILE,'w') as f:
-            json.dump(self.reminders,f)
+            json.dump(self.reminders,f,indent=3)
         if self.reminders!=[]:
             await self.remind()
 
