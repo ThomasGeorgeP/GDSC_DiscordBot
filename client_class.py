@@ -7,7 +7,7 @@ import json
 from reminders import timekeeper,REMINDER_FILE,convert_to_timestamp,seconds_from_now
 import time
 import asyncio
-
+from music_player import MusicPlayer
 class myClient(commands.Bot):
     
     
@@ -19,7 +19,7 @@ class myClient(commands.Bot):
         self.poll_message=False
         self.poll_id=None
         self.timekeeper=timekeeper(self)
-
+        self.music_player=MusicPlayer(self)
 
     async def on_ready(self):
     
@@ -51,6 +51,8 @@ class myClient(commands.Bot):
                                 /create_reminder <dd-mm-yyyy hour:minutes in 24 hour format>)''')
         elif message.content.startswith("$ai") or message.content.startswith("$summarize") or message.content.startswith("$tellmore"):
             await self.gemini.reply(message)
+        elif message.content.startswith("$join") or message.content.startswith("$leave") or message.content.startswith("$play"):
+            await self.music_player.reply(message)
         else:
             pass
             
