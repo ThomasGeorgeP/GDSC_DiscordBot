@@ -13,15 +13,28 @@ class gemini(genai.Client):
         return self.response.text
 
     async def reply(self,message:discord.Message):
-        if message.content.startswith("$ai"):
+        if message.content.startswith("$ai") and message.content[3:]!="":
             text= self.gen(message.content[3:])
-            if len(text)>1999:
+            for i in range(0,len(text),1900):
+                await message.channel.send(text[i:i+1900])
+           
+                
+
+        elif message.content.startswith("$summarize"):
+            if message.reference:
+                long_text= await message.channel.fetch_message(message.reference.message_id)
+                text=self.gen("Summarize the following entered text to few lines:\n"+long_text.content)
+                await message.channel.send(text)
+        
+            else:
+                await message.channel.send("Reply to message you want to summarize with \"$summarize\"! ")
+
+        elif message.content.startswith("$tellmore"):
+            if message.reference:
+                long_text= await message.channel.fetch_message(message.reference.message_id)
+                text=self.gen("give me more info on :\n"+long_text.content)
                 for i in range(0,len(text),1900):
                     await message.channel.send(text[i:i+1900])
             else:
-                await message.channel.send(text)
-
-        elif message.content.startswith("$summarize"):
-            long_text= await message.channel.fetch_message(message.reference.message_id)
-            text=self.gen("Summarize the following entered text to few lines:\n"+long_text.content)
-            await message.channel.send(text)
+                await message.channel.send("Reply to message you want to know more about with \"$tellmore\"! ")
+            

@@ -49,15 +49,8 @@ class myClient(commands.Bot):
                                 /create_poll <options seperated by commas> <title(optional)> <show(bool) for anonymous voting>
                                 /rickroll -self explanatory
                                 /create_reminder <dd-mm-yyyy hour:minutes in 24 hour format>)''')
-        elif message.content.startswith("$ai"):
+        elif message.content.startswith("$ai") or message.content.startswith("$summarize") or message.content.startswith("$tellmore"):
             await self.gemini.reply(message)
-           
-        elif message.content.startswith("$summarize"):
-            if message.reference:
-                await self.gemini.reply(message)
-        
-            else:
-                await message.channel.send("Reply to message you want to summarize with \"$summarize\"! ")
         else:
             pass
             
