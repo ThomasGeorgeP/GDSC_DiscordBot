@@ -36,9 +36,14 @@ class MusicPlayer:
             await self.join(ctx)
         elif ctx.content.startswith("$leave"):
             await self.leave(ctx)
-        else:
+        elif ctx.content.startswith("$play"):
             await self.play(ctx)
-
+        elif ctx.content.startswith("$pause"):
+            await self.pause(ctx)
+        elif ctx.content.startswith("$resume"):
+            await self.resume(ctx)
+        else:
+            pass
     async def join(self, ctx):
         """Joins the voice channel of the user."""
         if ctx.author.voice:
@@ -76,11 +81,26 @@ class MusicPlayer:
         
         if not self.voice_client:
             await self.join(ctx)
-            
+
         self.voice_client.play(
             discord.FFmpegPCMAudio(audio_url),
             after=lambda e: print(f"Finished playing: {e}")
         )
 
         await ctx.channel.send(f"Now playing: {info['title']}")
-
+    async def pause(self, ctx:discord.Message):
+        """Pauses the currently playing audio."""
+        
+        if self.voice_client and self.voice_client.is_playing():
+            self.voice_client.pause()  # Pause the audio
+            await ctx.channel.send("⏸️ Music paused!")
+        else:
+            await ctx.channel.send("❌ No audio is playing currently.")
+    async def resume(self, ctx:discord.Message):
+        """Resumes the paused audio."""
+        
+        if self.voice_client and self.voice_client.is_paused():
+            self.voice_client.resume()  # Resume playback
+            await ctx.channel.send("▶️ Music resumed!")
+        else:
+            await ctx.channel.send("❌ No audio is paused.")

@@ -51,7 +51,7 @@ class myClient(commands.Bot):
                                 /create_reminder <dd-mm-yyyy hour:minutes in 24 hour format>)''')
         elif message.content.startswith("$ai") or message.content.startswith("$summarize") or message.content.startswith("$tellmore"):
             await self.gemini.reply(message)
-        elif message.content.startswith("$join") or message.content.startswith("$leave") or message.content.startswith("$play"):
+        elif message.content.startswith("$join") or message.content.startswith("$leave") or message.content.startswith("$play") or message.content.startswith("$pause") or message.content.startswith("$resume"):
             await self.music_player.reply(message)
         else:
             pass
