@@ -5,13 +5,15 @@ from gemini import gemini
 from poll_view import PollView
 import json
 from reminders import timekeeper,REMINDER_FILE,convert_to_timestamp,seconds_from_now
+import time
+import asyncio
 
 class myClient(commands.Bot):
     
     
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
-        self.gemini=gemini()
+        self.gemini=gemini(self)
         self.server_id=discord.Object(1346101662590173305)
         self.slash_commands()
         self.poll_message=False
@@ -34,7 +36,9 @@ class myClient(commands.Bot):
         if message.author==self.user and self.poll_message:
             self.poll_id=discord.Object(message.id)
             self.poll_message=False
-            
+        elif message.author==self.user:
+            await self.catch_own_messages(message=message)
+
         if message.content.startswith("$status"):
             await message.channel.send(f"Bot is Up and running!")
         elif message.content.startswith("$help"):
@@ -46,23 +50,17 @@ class myClient(commands.Bot):
                                 /rickroll -self explanatory
                                 /create_reminder <dd-mm-yyyy hour:minutes in 24 hour format>)''')
         elif message.content.startswith("$ai"):
-            text= self.gemini.gen(message.content[3:])
-            if len(text)>1999:
-                for i in range(0,len(text),1900):
-                    await message.channel.send(text[i:i+1900])
-            else:
-                await message.channel.send(text)
+            await self.gemini.reply(message)
+           
         elif message.content.startswith("$summarize"):
             if message.reference:
-                long_text= await message.channel.fetch_message(message.reference.message_id)
-                text=self.gemini.gen("Summarize the following entered text to few words:\n"+long_text.content)
-                await message.channel.send(text)
+                await self.gemini.reply(message)
+        
             else:
                 await message.channel.send("Reply to message you want to summarize with \"$summarize\"! ")
         else:
             pass
             
-        #print(f"Message from {message.author}: {message.content}")
 
     async def on_message_edit(self,before,after):
         #print(type(before))
@@ -94,7 +92,26 @@ class myClient(commands.Bot):
         await channel.send(content=f"<@{parameters["user"]}>!",embed=reminder_embed)
 
     async def catch_own_messages(self,message:discord.Message):
-        pass
+        
+        if message.content=="Reminder created successfully!":
+            await asyncio.sleep(5)
+            self.params["message_id"]=message.id
+            await self.new_timekeeper()
+
+    async def new_timekeeper(self):
+        try:
+            with open(REMINDER_FILE) as f:
+                reminders:list=json.load(f)
+                reminders.append(self.params)
+        except:
+            reminders=[]
+            reminders.append(self.params)
+        with open(REMINDER_FILE,'w') as f:
+            json.dump(reminders,f,indent=3)
+        del self.timekeeper
+        self.timekeeper=timekeeper(self)
+        await self.timekeeper.remind()
+
     def slash_commands(self):
         
         @self.tree.command(name="helloo",description="Bot Says Hi! ",guild=self.server_id)
@@ -139,26 +156,13 @@ class myClient(commands.Bot):
         "message_id":932874928379,
         "channel_id":3908247002323072374347
             }'''    
-            
-            rem_embed=discord.Embed(title="Reminder",description=f"Reminder created for {datetime}")
-            rem_embed.add_field(name="User",value=f"<@{interaction.user.id}>")
+            if timestamp>time.time():
+                rem_embed=discord.Embed(title="Reminder",description=f"Reminder created for {datetime}")
+                rem_embed.add_field(name="User",value=f"<@{interaction.user.id}>")
 
-            if description!='':
-                rem_embed.add_field(name="Description",value=description)
-            await interaction.response.send_message(embed=rem_embed)
-
-
-            params={"user":interaction.user.id,"description":description,"due_time":datetime,"time_till_reminder":timestamp,"channel_id":interaction.channel.id}
-            try:
-                with open(REMINDER_FILE) as f:
-                    reminders:list=json.load(f)
-                    reminders.append(params)
-            except:
-                reminders=[]
-                reminders.append(params)
-            with open(REMINDER_FILE,'w') as f:
-                json.dump(reminders,f,indent=3)
-            del self.timekeeper
-            self.timekeeper=timekeeper(self)
-            await self.timekeeper.remind()
-        
+                if description!='':
+                    rem_embed.add_field(name="Description",value=description)
+                await interaction.response.send_message(content="Reminder created successfully!",embed=rem_embed)
+                self.params={"user":interaction.user.id,"description":description,"due_time":datetime,"time_till_reminder":timestamp,"channel_id":interaction.channel.id}
+            else:
+                await interaction.response.send_message("Time given is in the past! ")
